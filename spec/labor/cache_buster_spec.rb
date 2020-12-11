@@ -11,6 +11,14 @@ RSpec.describe CacheBuster, type: :labor do
   let(:podcast_episode) { create(:podcast_episode, podcast_id: podcast.id) }
   let(:tag) { create(:tag) }
 
+  describe "#bust" do
+    let(:path) { "/#{user.username}" }
+
+    it "returns nil if no edge caching service is configured" do
+      expect(cache_buster.bust(path)).to eq(nil)
+    end
+  end
+
   describe "#bust_comment" do
     it "busts comment" do
       cache_buster.bust_comment(comment.commentable)

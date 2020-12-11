@@ -46,7 +46,7 @@ RSpec.describe ArticleDecorator, type: :decorator do
 
     it "returns the article url without a canonical_url" do
       article.canonical_url = ""
-      expected_url = "https://#{ApplicationConfig['APP_DOMAIN']}#{article.path}"
+      expected_url = "#{ApplicationConfig['APP_PROTOCOL']}#{ApplicationConfig['APP_DOMAIN']}#{article.path}"
       expect(article.decorate.processed_canonical_url).to eq(expected_url)
     end
   end
@@ -77,7 +77,7 @@ RSpec.describe ArticleDecorator, type: :decorator do
 
   describe "#url" do
     it "returns the article url" do
-      expected_url = "https://#{ApplicationConfig['APP_DOMAIN']}#{article.path}"
+      expected_url = "#{ApplicationConfig['APP_PROTOCOL']}#{ApplicationConfig['APP_DOMAIN']}#{article.path}"
       expect(article.decorate.url).to eq(expected_url)
     end
   end
@@ -219,6 +219,28 @@ RSpec.describe ArticleDecorator, type: :decorator do
       additional_characters_length = (ArticleDecorator::LONG_MARKDOWN_THRESHOLD + 1) - article.body_markdown.length
       article.body_markdown << Faker::Hipster.paragraph_by_chars(characters: additional_characters_length)
       expect(article.decorate.long_markdown?).to eq true
+    end
+  end
+
+  describe "#discussion?" do
+    it "returns false if it's not tagged with discuss" do
+      article.cached_tag_list = "welcome"
+      expect(article.decorate.discussion?).to eq false
+    end
+
+    it "returns false if featured number is less than 35 hours ago" do
+      Timecop.freeze(Time.current) do
+        article.featured_number = 35.hours.ago.to_i - 1
+        expect(article.decorate.discussion?).to eq false
+      end
+    end
+
+    it "returns true if it's tagged with discuss and has a feature number greater than 35 hours ago" do
+      Timecop.freeze(Time.current) do
+        article.cached_tag_list = "welcome, discuss"
+        article.featured_number = 35.hours.ago.to_i + 1
+        expect(article.decorate.discussion?).to eq true
+      end
     end
   end
 end

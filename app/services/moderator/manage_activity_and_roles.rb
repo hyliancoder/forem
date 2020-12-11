@@ -57,12 +57,12 @@ module Moderator
 
     def handle_user_status(role, note)
       case role
-      when "Ban" || "Spammer"
+      when "Suspend" || "Spammer"
         user.add_role :banned
         remove_privileges
       when "Warn"
         warned
-      when "Comment Ban"
+      when "Comment Suspend"
         comment_banned
       when "Regular Member"
         regular_member
@@ -70,12 +70,28 @@ module Moderator
         remove_negative_roles
         user.remove_role :pro
         add_trusted_role
+      when "Admin"
+        check_super_admin
+        remove_negative_roles
+        user.add_role :admin
+      when "Super Admin"
+        check_super_admin
+        remove_negative_roles
+        user.add_role :super_admin
+      when /^(Resource Admin: )/
+        check_super_admin
+        remove_negative_roles
+        user.add_role(:single_resource_admin, role.split("Resource Admin: ").last.safe_constantize)
       when "Pro"
         remove_negative_roles
         add_trusted_role
         user.add_role :pro
       end
       create_note(role, note)
+    end
+
+    def check_super_admin
+      raise "You need super admin status to take this action" unless @admin.has_role?(:super_admin)
     end
 
     def comment_banned

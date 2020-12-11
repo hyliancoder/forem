@@ -17,11 +17,18 @@ bin/startup
 (This just runs `foreman start -f Procfile.dev`, for notes on how to install
 Foreman, please see [Other Tools](/installation/others/))
 
-Then point your browser to http://localhost:3000/ to view the site.
+Then point your browser to http://localhost:3000/ to view the site. To log in
+use the admin account created by default (see
+[Database](/getting-started/db/#default-admin-user))
 
 If you run into issues while trying to run `bin/setup` and the error message
 isn't helpful, try running `bin/rails s -p 3000`. For example, you may need to
 `yarn install` before starting the app.
+
+If Sidekiq is producing errors similar to
+`No such file or directory - [SOME FILE]`, you may need to start Sidekiq by
+itself once to help it initialize itself fully. You can use the command
+`bundle exec sidekiq` to do this.
 
 If you're working on Forem regularly, you can use `alias start="bin/startup"` to
 make this even easier. 😊

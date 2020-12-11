@@ -14,11 +14,11 @@ module Articles
       image = user_defined_image
       if image.present?
         image = image.split("w_1000/").last if image.include?("w_1000/https://")
-        return ImageResizer.call(image, width: width, height: height, crop: "imagga_scale")
+        return Images::Optimizer.call(image, width: width, height: height, crop: "imagga_scale")
       end
       return legacy_article_social_image unless use_new_social_url?
 
-      article_social_preview_url(article, format: :png)
+      article_social_preview_url(article, format: :png, host: SiteConfig.app_domain)
     end
 
     private
@@ -29,10 +29,10 @@ module Articles
       cache_key = "article-social-img-#{article}-#{article.updated_at.rfc3339}-#{article.comments_count}"
 
       Rails.cache.fetch(cache_key, expires_in: 1.hour) do
-        src = GeneratedImage.new(article).social_image
+        src = Images::GenerateSocialImage.call(article)
         return src if src.start_with? "https://res.cloudinary.com/"
 
-        ImageResizer.call(src, width: "1000", height: "500", crop: "imagga_scale")
+        Images::Optimizer.call(src, width: "1000", height: "500", crop: "imagga_scale")
       end
     end
 
